@@ -4,6 +4,7 @@ import { useState } from "react";
 import { TIER_LABEL, TYPE_BADGE, priceLabel, waLink, type Product, type Tier } from "@/lib/shop";
 import Crest from "./Crest";
 import Icon from "./Icon";
+import ScrollRow from "./ScrollRow";
 import { useShop } from "./ShopProvider";
 
 type Filters = { size: string; style: string; budget: string; type: string };
@@ -34,9 +35,10 @@ function matches(p: Product, tier: Tier | "all", f: Filters) {
 }
 
 export default function Catalog() {
-  const { products, tier, setTier, addToCart } = useShop();
+  const { products, tier, setTier } = useShop();
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
   const list = products.filter((p) => matches(p, tier, filters));
+  const browsing = tier === "all" && Object.values(filters).every((v) => v === "all");
   const count = (t: Tier | "all") => (t === "all" ? products.length : products.filter((p) => p.tier === t).length);
 
   return (
@@ -104,7 +106,31 @@ export default function Catalog() {
         </div>
 
         {/* Grid */}
-        {list.length === 0 ? (
+        {browsing ? (
+          // No filters: one sideways row per occasion, like a store shelf
+          TIERS.slice(1).map((t) => {
+            const row = products.filter((p) => p.tier === t);
+            if (!row.length) return null;
+            return (
+              <ScrollRow
+                key={t}
+                title={TIER_LABEL[t as Tier]}
+                eyebrow={`${row.length} pieces`}
+                action={
+                  <button type="button" onClick={() => setTier(t)} className="text-xs font-semibold uppercase tracking-wider text-gold underline hover:text-maroon-dark">
+                    View all
+                  </button>
+                }
+              >
+                {row.map((p) => (
+                  <div key={p.id} className="flex w-[78%] flex-shrink-0 snap-start sm:w-[45%] lg:w-[30%]">
+                    <ProductCard p={p} />
+                  </div>
+                ))}
+              </ScrollRow>
+            );
+          })
+        ) : list.length === 0 ? (
           <div className="py-12 text-center">
             <Icon name="search_off" className="text-[40px] text-muted" />
             <p className="mt-2 font-semibold text-maroon-dark">No costumes match these filters</p>
@@ -112,51 +138,54 @@ export default function Catalog() {
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {list.map((p) => {
-              const badge = TYPE_BADGE[p.type];
-              return (
-                <article key={p.id} className="group flex flex-col overflow-hidden rounded-xl bg-white shadow-sm transition-shadow hover:shadow-xl">
-                  {/* Photo slot: crest tile until real costume photos are added */}
-                  <div className="relative flex aspect-[16/10] items-center justify-center overflow-hidden bg-gradient-to-br from-maroon-light via-maroon to-maroon-dark">
-                    <Crest id={`card-${p.id}`} className="h-28 w-24 opacity-90 transition-transform duration-500 group-hover:scale-105" />
-                    <span className={`absolute left-3 top-3 inline-flex items-center gap-1 rounded px-2 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm ${badge.className}`}>
-                      <Icon name={badge.icon} className="text-[13px]" /> {badge.label}
-                    </span>
-                    <span className="absolute bottom-3 right-3 rounded bg-cream/95 px-2 py-0.5 text-[11px] font-semibold uppercase text-maroon-dark shadow-sm">
-                      {TIER_LABEL[p.tier]}
-                    </span>
-                  </div>
-                  <div className="flex flex-1 flex-col p-6">
-                    <h3 className="font-serif text-2xl leading-tight text-maroon-dark transition-colors group-hover:text-gold">{p.name}</h3>
-                    <p className="mt-1 flex-1 text-sm text-ink/70">{p.desc}</p>
-                    <div className="mt-4">
-                      <span className="block text-[11px] font-semibold uppercase tracking-widest text-muted">{p.perDay ? "Rental Price" : "Price"}</span>
-                      <span className="font-serif text-2xl font-semibold text-maroon-dark">{priceLabel(p)}</span>
-                    </div>
-                    <div className="mt-4 grid grid-cols-2 gap-1.5">
-                      <a
-                        href={waLink(`Hello Bhushan Ki Dukaan, I want to inquire about: ${p.name}`)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center gap-1 rounded bg-whatsapp px-2 py-2 text-[11px] font-semibold uppercase tracking-wider text-white hover:opacity-90"
-                      >
-                        <Icon name="chat" className="text-[15px]" /> WhatsApp
-                      </a>
-                      <button
-                        type="button"
-                        onClick={() => addToCart(p.id)}
-                        className="rounded bg-maroon-dark px-2 py-2 text-[11px] font-semibold uppercase tracking-wider text-white transition-colors hover:bg-maroon"
-                      >
-                        Add to Bag
-                      </button>
-                    </div>
-                  </div>
-                </article>
-              );
-            })}
+            {list.map((p) => <ProductCard key={p.id} p={p} />)}
           </div>
         )}
       </div>
     </section>
+  );
+}
+
+function ProductCard({ p }: { p: Product }) {
+  const { addToCart } = useShop();
+  const badge = TYPE_BADGE[p.type];
+  return (
+    <article className="group flex w-full flex-col overflow-hidden rounded-xl bg-white shadow-sm transition-shadow hover:shadow-xl">
+    {/* Photo slot: crest tile until real costume photos are added */}
+    <div className="relative flex aspect-[16/10] items-center justify-center overflow-hidden bg-gradient-to-br from-maroon-light via-maroon to-maroon-dark">
+      <Crest id={`card-${p.id}`} className="h-28 w-24 opacity-90 transition-transform duration-500 group-hover:scale-105" />
+      <span className={`absolute left-3 top-3 inline-flex items-center gap-1 rounded px-2 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm ${badge.className}`}>
+        <Icon name={badge.icon} className="text-[13px]" /> {badge.label}
+      </span>
+      <span className="absolute bottom-3 right-3 rounded bg-cream/95 px-2 py-0.5 text-[11px] font-semibold uppercase text-maroon-dark shadow-sm">
+        {TIER_LABEL[p.tier]}
+      </span>
+    </div>
+    <div className="flex flex-1 flex-col p-6">
+      <h3 className="font-serif text-2xl leading-tight text-maroon-dark transition-colors group-hover:text-gold">{p.name}</h3>
+      <p className="mt-1 flex-1 text-sm text-ink/70">{p.desc}</p>
+      <div className="mt-4">
+        <span className="block text-[11px] font-semibold uppercase tracking-widest text-muted">{p.perDay ? "Rental Price" : "Price"}</span>
+        <span className="font-serif text-2xl font-semibold text-maroon-dark">{priceLabel(p)}</span>
+      </div>
+      <div className="mt-4 grid grid-cols-2 gap-1.5">
+        <a
+          href={waLink(`Hello Bhushan Ki Dukaan, I want to inquire about: ${p.name}`)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center justify-center gap-1 rounded bg-whatsapp px-2 py-2 text-[11px] font-semibold uppercase tracking-wider text-white hover:opacity-90"
+        >
+          <Icon name="chat" className="text-[15px]" /> WhatsApp
+        </a>
+        <button
+          type="button"
+          onClick={() => addToCart(p.id)}
+          className="rounded bg-maroon-dark px-2 py-2 text-[11px] font-semibold uppercase tracking-wider text-white transition-colors hover:bg-maroon"
+        >
+          Add to Bag
+        </button>
+      </div>
+    </div>
+  </article>
   );
 }

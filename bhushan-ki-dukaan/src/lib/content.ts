@@ -10,7 +10,17 @@ export type HomepageContent = {
   occasions: { heading: string; eyebrow: string; intro: string; cards: { tier: Tier; tagline: string; title: string; text: string }[] };
   services: { heading: string; eyebrow: string; intro: string; packages: { name: string; tag: string; text: string; items: string[]; cta: string; featured: boolean }[] };
   about: { heading: string; text: string; hours: string };
+  gallery: { eyebrow: string; heading: string; intro: string; rows: GalleryRow[] };
 };
+
+export type GalleryItem = { title: string; caption: string; image: string };
+export type GalleryRow = { eyebrow: string; title: string; icon: string; items: GalleryItem[] };
+
+/** Most rows a gallery shows, and most photos per row (fixed so the admin form stays simple). */
+export const GALLERY_ROWS = 6;
+export const GALLERY_ITEMS = 8;
+
+const g = (title: string, caption: string): GalleryItem => ({ title, caption, image: "" });
 
 export const DEFAULT_HOMEPAGE: HomepageContent = {
   pill: "Belagavi's Event Management & Costume Specialists",
@@ -49,6 +59,33 @@ export const DEFAULT_HOMEPAGE: HomepageContent = {
     heading: "Visit Our Flagship Studio",
     text: "Find us on Mahatma Phule Road, Shahapur, near Goaves Circle, above Bluestone Jewellers. Touch the fabrics, try on rentals, or plan your event with our team.",
     hours: "Open Mon – Sun, 10:00 AM – 9:00 PM",
+  },
+  gallery: {
+    eyebrow: "Our Work",
+    heading: "Moments We Have Styled",
+    intro: "Swipe through weddings, ceremonies, festivals and stage shows we have dressed and decorated across Belagavi.",
+    rows: [
+      {
+        eyebrow: "Weddings", title: "Wedding Decor & Rituals", icon: "favorite",
+        items: [g("Mandap Decor", "Brass, marigold & drapes"), g("Haldi", "Yellow florals & seating"), g("Mehendi", "Colourful lounge setups"), g("Sangeet Night", "Stage, lights & sound"), g("Varmala Stage", "Floral entry & backdrop"), g("Reception", "Royal stage & lighting")],
+      },
+      {
+        eyebrow: "Family Ceremonies", title: "Traditional Ceremonies", icon: "temple_hindu",
+        items: [g("Upanayanam", "Thread ceremony setup"), g("Seemantha", "Baby shower decor"), g("Naamkaran", "Naming ceremony cradle"), g("Engagement", "Ring ceremony stage"), g("Griha Pravesh", "Housewarming toran & rangoli")],
+      },
+      {
+        eyebrow: "Festivals & Community", title: "Festivals & Processions", icon: "celebration",
+        items: [g("Ganesh Utsav", "Society pandals"), g("Navratri Garba", "Dandiya nights"), g("Shiv Jayanti", "Procession costumes"), g("Rajyotsava", "Kannada cultural shows"), g("Dhol-Tasha Troupes", "Matching troupe wear")],
+      },
+      {
+        eyebrow: "Costumes", title: "Costumes in Action", icon: "checkroom",
+        items: [g("Peshwai Sherwani", "Groom & procession"), g("Nauvari Saree", "Maharashtrian bridal"), g("Ilkal Silk", "North Karnataka classic"), g("Lavani", "Folk dance sets"), g("Yakshagana", "Stage & theatre"), g("Matching Family Sets", "Coordinated outfits")],
+      },
+      {
+        eyebrow: "Kids & Schools", title: "School & Stage Shows", icon: "theater_comedy",
+        items: [g("Annual Day", "Group dance costumes"), g("Fancy Dress", "Freedom fighters & heroes"), g("Krishna Janmashtami", "Little Krishna & Radha"), g("Independence Day", "Tricolour themes"), g("Folk Dance", "Regional dance wear")],
+      },
+    ],
   },
 };
 

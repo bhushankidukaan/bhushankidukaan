@@ -2,12 +2,15 @@
 
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth";
-import { DEFAULT_HOMEPAGE, type HomepageContent } from "@/lib/content";
+import { DEFAULT_HOMEPAGE, GALLERY_ITEMS, GALLERY_ROWS, type HomepageContent } from "@/lib/content";
 import { sql } from "@/lib/db";
 
 export type SaveState = { ok?: boolean; error?: string } | undefined;
 
 const str = (f: FormData, k: string, max = 400) => String(f.get(k) ?? "").trim().slice(0, max);
+const range = (n: number) => Array.from({ length: n }, (_, i) => i);
+// Photo links must be web links or files in /public, never javascript: or data: URLs
+const imageUrl = (v: string) => (/^(https:\/\/|\/(?!\/))/.test(v) ? v : "");
 
 export async function saveHomepage(_: SaveState, f: FormData): Promise<SaveState> {
   const user = await requireUser("website");
@@ -41,6 +44,26 @@ export async function saveHomepage(_: SaveState, f: FormData): Promise<SaveState
       })),
     },
     about: { heading: str(f, "about.heading", 80), text: str(f, "about.text", 400), hours: str(f, "about.hours", 80) },
+    gallery: {
+      eyebrow: str(f, "gallery.eyebrow", 80),
+      heading: str(f, "gallery.heading", 80),
+      intro: str(f, "gallery.intro", 300),
+      // Rows and photos left without a title are dropped
+      rows: range(GALLERY_ROWS)
+        .map((r) => ({
+          eyebrow: str(f, `gallery.${r}.eyebrow`, 60),
+          title: str(f, `gallery.${r}.title`, 60),
+          icon: str(f, `gallery.${r}.icon`, 40).replace(/[^a-z_]/g, "") || "photo_camera",
+          items: range(GALLERY_ITEMS)
+            .map((i) => ({
+              title: str(f, `gallery.${r}.${i}.title`, 60),
+              caption: str(f, `gallery.${r}.${i}.caption`, 80),
+              image: imageUrl(str(f, `gallery.${r}.${i}.image`, 600)),
+            }))
+            .filter((it) => it.title),
+        }))
+        .filter((row) => row.title),
+    },
   };
 
   if (!content.hero.title || content.services.packages.some((p) => !p.name)) {

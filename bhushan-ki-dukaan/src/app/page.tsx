@@ -3,6 +3,7 @@ import Catalog from "@/components/Catalog";
 import Crest from "@/components/Crest";
 import Icon from "@/components/Icon";
 import { BagButton, BookButton, TierButton } from "@/components/ShopButtons";
+import ScrollRow from "@/components/ScrollRow";
 import ShopProvider from "@/components/ShopProvider";
 import SiteLegalLinks from "@/components/SiteLegalLinks";
 import { getActiveProducts, getHomepage } from "@/lib/content";
@@ -11,6 +12,7 @@ import { ADDRESS, PHONE_DISPLAY, PHONE_HREF, waLink, type Tier } from "@/lib/sho
 const NAV = [
   ["#tiers", "Shop by Occasion"],
   ["#catalog", "Costume Store"],
+  ["#gallery", "Our Work"],
   ["#services", "Event Services"],
   ["#about", "Belagavi Roots"],
 ];
@@ -24,7 +26,7 @@ export default async function Home() {
   // Content is edited in Admin → Website, so render per request
   await connection();
   const [content, products] = await Promise.all([getHomepage(), getActiveProducts()]);
-  const { hero, stats, occasions, services, about } = content;
+  const { hero, stats, occasions, services, about, gallery } = content;
   // Last word of the studio heading is highlighted, as in the original design
   const aboutWords = about.heading.split(" ");
   const aboutLast = aboutWords.pop();
@@ -131,6 +133,44 @@ export default async function Home() {
                 </TierButton>
               ))}
             </div>
+          </div>
+        </section>
+
+        {/* Gallery: one sideways row per kind of event */}
+        <section id="gallery" className="scroll-mt-24 overflow-hidden px-5 py-14 lg:px-16">
+          <div className="mx-auto max-w-7xl">
+            <div className="mx-auto mb-10 max-w-2xl text-center">
+              <span className={eyebrow}>{gallery.eyebrow}</span>
+              <h2 className={`${sectionHead} text-maroon-dark`}>{gallery.heading}</h2>
+              <p className="mt-2 text-muted">{gallery.intro}</p>
+            </div>
+            {gallery.rows.filter((r) => r.title && r.items.length).map((row, ri) => (
+              <ScrollRow key={ri} eyebrow={row.eyebrow} title={row.title}>
+                {row.items.map((item, ii) => (
+                  <a
+                    key={ii}
+                    href={waLink(`Hello Bhushan Ki Dukaan, I saw "${item.title}" on your website and would like to know more.`)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group relative aspect-[4/5] w-[68%] flex-shrink-0 snap-start overflow-hidden rounded-xl bg-gradient-to-br from-maroon-light via-maroon to-espresso shadow-md sm:w-[40%] lg:w-[23%]"
+                  >
+                    {item.image ? (
+                      // Photos are plain links set in Admin, so no Next image optimisation
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={item.image} alt={item.title} loading="lazy" className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                    ) : (
+                      <span className="absolute inset-0 flex items-center justify-center">
+                        <Icon name={row.icon} className="text-[88px] text-gold/35 transition-transform duration-700 group-hover:scale-110" />
+                      </span>
+                    )}
+                    <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent p-4 pt-16">
+                      <span className="block font-serif text-xl leading-tight text-white">{item.title}</span>
+                      {item.caption && <span className="mt-0.5 block text-xs text-white/75">{item.caption}</span>}
+                    </span>
+                  </a>
+                ))}
+              </ScrollRow>
+            ))}
           </div>
         </section>
 

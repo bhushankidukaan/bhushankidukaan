@@ -1,7 +1,7 @@
 import SaveForm from "@/components/admin/SaveForm";
 import { Card, Field, inputClass } from "@/components/admin/ui";
 import { requireUser } from "@/lib/auth";
-import { getHomepage } from "@/lib/content";
+import { GALLERY_ITEMS, GALLERY_ROWS, getHomepage } from "@/lib/content";
 import { TIER_LABEL } from "@/lib/shop";
 import { saveHomepage } from "./actions";
 
@@ -9,6 +9,7 @@ export default async function HomepageEditor() {
   await requireUser("website");
   const c = await getHomepage();
   const area = `${inputClass} min-h-20`;
+  const range = (n: number) => Array.from({ length: n }, (_, i) => i);
 
   return (
     <SaveForm action={saveHomepage} className="space-y-6">
@@ -84,6 +85,48 @@ export default async function HomepageEditor() {
               </div>
             ))}
           </div>
+        </div>
+      </Card>
+
+      <Card title="Our Work gallery">
+        <div className="grid gap-4">
+          <p className="text-sm text-muted">
+            Each row scrolls sideways on the homepage. For a photo, paste a link starting with https:// (for example from Cloudinary or ImageKit),
+            or put the file in the project&apos;s public folder and enter /gallery/photo.jpg. Without a photo the card shows the row&apos;s icon.
+            Clear a title to remove that photo or row.
+          </p>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label="Label"><input name="gallery.eyebrow" defaultValue={c.gallery.eyebrow} className={inputClass} /></Field>
+            <Field label="Heading"><input name="gallery.heading" defaultValue={c.gallery.heading} className={inputClass} /></Field>
+          </div>
+          <Field label="Intro"><textarea name="gallery.intro" defaultValue={c.gallery.intro} className={area} /></Field>
+          {range(GALLERY_ROWS).map((r) => {
+            const row = c.gallery.rows[r];
+            return (
+              <details key={r} open={r === 0} className="rounded-lg bg-sand p-3">
+                <summary className="cursor-pointer font-semibold text-maroon-dark">Row {r + 1}{row ? ` · ${row.title}` : " · empty"}</summary>
+                <div className="mt-3 grid gap-3">
+                  <div className="grid gap-3 md:grid-cols-3">
+                    <Field label="Small label"><input name={`gallery.${r}.eyebrow`} defaultValue={row?.eyebrow} className={inputClass} /></Field>
+                    <Field label="Row title"><input name={`gallery.${r}.title`} defaultValue={row?.title} className={inputClass} /></Field>
+                    <Field label="Icon" hint="A Material Symbols name, e.g. favorite, celebration.">
+                      <input name={`gallery.${r}.icon`} defaultValue={row?.icon} className={inputClass} />
+                    </Field>
+                  </div>
+                  {range(GALLERY_ITEMS).map((i) => {
+                    const item = row?.items[i];
+                    return (
+                      <div key={i} className="grid gap-2 rounded bg-white/60 p-2 md:grid-cols-[1fr_1fr_2fr]">
+                        <input name={`gallery.${r}.${i}.title`} defaultValue={item?.title} placeholder={`Photo ${i + 1} title`} className={inputClass} />
+                        <input name={`gallery.${r}.${i}.caption`} defaultValue={item?.caption} placeholder="Caption" className={inputClass} />
+                        <input name={`gallery.${r}.${i}.image`} defaultValue={item?.image} placeholder="Photo link (optional)" className={inputClass} />
+                      </div>
+                    );
+                  })}
+                </div>
+              </details>
+            );
+          })}
         </div>
       </Card>
 
