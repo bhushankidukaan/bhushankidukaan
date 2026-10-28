@@ -1,7 +1,7 @@
 export const WHATSAPP_NUMBER = "919740639809";
 export const PHONE_DISPLAY = "+91 97406 39809";
 export const PHONE_HREF = "tel:+919740639809";
-export const ADDRESS = "Khade Bazar & Maruti Galli, Belagavi, Karnataka";
+export const ADDRESS = "3rd Floor, Mahatma Phule Rd, near Goaves Circle, above Bluestone Jewellers, Shastri Nagar, Shahapur, Belagavi, Karnataka 590003";
 
 export type Tier = "mass" | "premium" | "luxury";
 export type Size = "kids" | "adult" | "custom";
