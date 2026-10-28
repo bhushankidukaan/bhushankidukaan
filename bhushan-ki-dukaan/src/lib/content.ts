@@ -1,6 +1,6 @@
 import "server-only";
 import { hasDatabase, sql } from "./db";
-import { PRODUCTS, type Product, type Tier } from "./shop";
+import { PRODUCTS, dummyPhoto, type Product, type Tier } from "./shop";
 
 // Everything on the homepage that staff can edit from Admin → Website.
 export type HomepageContent = {
@@ -20,7 +20,11 @@ export type GalleryRow = { eyebrow: string; title: string; icon: string; items: 
 export const GALLERY_ROWS = 6;
 export const GALLERY_ITEMS = 8;
 
-const g = (title: string, caption: string): GalleryItem => ({ title, caption, image: "" });
+const g = (title: string, caption: string): GalleryItem => ({
+  title,
+  caption,
+  image: dummyPhoto("bkd-" + title.toLowerCase().replace(/[^a-z0-9]+/g, "-")),
+});
 
 export const DEFAULT_HOMEPAGE: HomepageContent = {
   pill: "Belagavi's Event Management & Costume Specialists",
@@ -103,11 +107,11 @@ export async function getHomepage(): Promise<HomepageContent> {
 
 type ProductRow = {
   id: number; name: string; tier: Product["tier"]; size: Product["size"]; style: Product["style"];
-  sale_type: Product["type"]; price: number; per_day: boolean; description: string; active: boolean; sort_order: number;
+  sale_type: Product["type"]; price: number; per_day: boolean; description: string; active: boolean; sort_order: number; image: string;
 };
 
 const toProduct = (r: ProductRow): Product => ({
-  id: r.id, name: r.name, tier: r.tier, size: r.size, style: r.style, type: r.sale_type, price: r.price, perDay: r.per_day, desc: r.description,
+  id: r.id, name: r.name, tier: r.tier, size: r.size, style: r.style, type: r.sale_type, price: r.price, perDay: r.per_day, desc: r.description, image: r.image ?? "",
 });
 
 /** Active costumes for the public catalog; falls back to the built-in list without a database. */

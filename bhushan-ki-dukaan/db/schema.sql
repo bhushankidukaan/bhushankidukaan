@@ -41,8 +41,12 @@ CREATE TABLE IF NOT EXISTS products (
   description text NOT NULL DEFAULT '',
   sort_order  integer NOT NULL DEFAULT 0,
   active      boolean NOT NULL DEFAULT true,
+  image       text NOT NULL DEFAULT '',
   updated_at  timestamptz NOT NULL DEFAULT now()
 );
+
+-- Added after launch; keeps databases created earlier in step
+ALTER TABLE products ADD COLUMN IF NOT EXISTS image text NOT NULL DEFAULT '';
 
 -- Sales CRM: every booking request and bag order from the website.
 CREATE TABLE IF NOT EXISTS leads (

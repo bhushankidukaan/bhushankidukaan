@@ -2,15 +2,35 @@
 
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth";
-import { DEFAULT_HOMEPAGE, GALLERY_ITEMS, GALLERY_ROWS, type HomepageContent } from "@/lib/content";
+import { DEFAULT_HOMEPAGE, GALLERY_ITEMS, GALLERY_ROWS, type GalleryRow, type HomepageContent } from "@/lib/content";
 import { sql } from "@/lib/db";
 
 export type SaveState = { ok?: boolean; error?: string } | undefined;
 
 const str = (f: FormData, k: string, max = 400) => String(f.get(k) ?? "").trim().slice(0, max);
-const range = (n: number) => Array.from({ length: n }, (_, i) => i);
 // Photo links must be web links or files in /public, never javascript: or data: URLs
 const imageUrl = (v: string) => (/^(https:\/\/|\/(?!\/))/.test(v) ? v : "");
+const clip = (v: unknown, max: number) => (typeof v === "string" ? v.trim().slice(0, max) : "");
+
+/** The gallery editor posts its rows as JSON; rebuild them field by field so nothing unexpected is stored. */
+function parseGallery(json: string): GalleryRow[] {
+  let raw: unknown;
+  try {
+    raw = JSON.parse(json);
+  } catch {
+    return DEFAULT_HOMEPAGE.gallery.rows;
+  }
+  if (!Array.isArray(raw)) return [];
+  return raw.slice(0, GALLERY_ROWS).flatMap((row) => {
+    const title = clip(row?.title, 60);
+    if (!title) return [];
+    const items = (Array.isArray(row.items) ? row.items : []).slice(0, GALLERY_ITEMS).flatMap((it: Record<string, unknown>) => {
+      const itemTitle = clip(it?.title, 60);
+      return itemTitle ? [{ title: itemTitle, caption: clip(it.caption, 80), image: imageUrl(clip(it.image, 600)) }] : [];
+    });
+    return [{ eyebrow: clip(row.eyebrow, 60), title, icon: clip(row.icon, 40).replace(/[^a-z_]/g, "") || "photo_camera", items }];
+  });
+}
 
 export async function saveHomepage(_: SaveState, f: FormData): Promise<SaveState> {
   const user = await requireUser("website");
@@ -48,21 +68,7 @@ export async function saveHomepage(_: SaveState, f: FormData): Promise<SaveState
       eyebrow: str(f, "gallery.eyebrow", 80),
       heading: str(f, "gallery.heading", 80),
       intro: str(f, "gallery.intro", 300),
-      // Rows and photos left without a title are dropped
-      rows: range(GALLERY_ROWS)
-        .map((r) => ({
-          eyebrow: str(f, `gallery.${r}.eyebrow`, 60),
-          title: str(f, `gallery.${r}.title`, 60),
-          icon: str(f, `gallery.${r}.icon`, 40).replace(/[^a-z_]/g, "") || "photo_camera",
-          items: range(GALLERY_ITEMS)
-            .map((i) => ({
-              title: str(f, `gallery.${r}.${i}.title`, 60),
-              caption: str(f, `gallery.${r}.${i}.caption`, 80),
-              image: imageUrl(str(f, `gallery.${r}.${i}.image`, 600)),
-            }))
-            .filter((it) => it.title),
-        }))
-        .filter((row) => row.title),
+      rows: parseGallery(String(f.get("gallery.rows") ?? "[]")),
     },
   };
 
@@ -101,19 +107,29 @@ export async function saveProduct(_: SaveState, f: FormData): Promise<SaveState>
     active: f.get("active") === "on",
     description: str(f, "description", 400),
     sortOrder: Math.round(Number(f.get("sort_order") || 0)),
+    image: imageUrl(str(f, "image", 600)),
   };
   if (id) {
     await sql()`
       UPDATE products SET name = ${name}, tier = ${row.tier}, size = ${row.size}, style = ${row.style}, sale_type = ${row.saleType},
         price = ${price}, per_day = ${row.perDay}, description = ${row.description}, sort_order = ${row.sortOrder},
-        active = ${row.active}, updated_at = now()
+        active = ${row.active}, image = ${row.image}, updated_at = now()
       WHERE id = ${id}`;
   } else {
     await sql()`
-      INSERT INTO products (name, tier, size, style, sale_type, price, per_day, description, sort_order, active)
-      VALUES (${name}, ${row.tier}, ${row.size}, ${row.style}, ${row.saleType}, ${price}, ${row.perDay}, ${row.description}, ${row.sortOrder}, ${row.active})`;
+      INSERT INTO products (name, tier, size, style, sale_type, price, per_day, description, sort_order, active, image)
+      VALUES (${name}, ${row.tier}, ${row.size}, ${row.style}, ${row.saleType}, ${price}, ${row.perDay}, ${row.description}, ${row.sortOrder}, ${row.active}, ${row.image})`;
   }
   revalidatePath("/");
   revalidatePath("/admin/website/costumes");
   return { ok: true };
+}
+
+/** Permanently removes a costume. Old inquiries keep their own copy of the item names. */
+export async function deleteProduct(f: FormData) {
+  await requireUser("website");
+  const id = Number(f.get("id") || 0);
+  if (id) await sql()`DELETE FROM products WHERE id = ${id}`;
+  revalidatePath("/");
+  revalidatePath("/admin/website/costumes");
 }

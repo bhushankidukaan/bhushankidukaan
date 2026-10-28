@@ -19,7 +19,12 @@ export type Product = {
   price: number;
   perDay: boolean;
   desc: string;
+  /** Photo link; empty shows the crest tile. */
+  image: string;
 };
+
+/** Placeholder photo (same picture for the same seed) until real photos are added in Admin. */
+export const dummyPhoto = (seed: string, w = 800, h = 1000) => `https://picsum.photos/seed/${seed}/${w}/${h}`;
 
 export const TIER_LABEL: Record<Tier, string> = {
   mass: "Festivals & School",
@@ -34,7 +39,7 @@ export const TYPE_BADGE: Record<SaleType, { label: string; icon: string; classNa
   bespoke: { label: "Bespoke", icon: "diamond", className: "bg-maroon-dark text-gold-light" },
 };
 
-export const PRODUCTS: Product[] = [
+const BASE_PRODUCTS: Omit<Product, "image">[] = [
   { id: 1, name: "Kids Folk Dance Costume Set", tier: "mass", size: "kids", style: "folk", type: "rent", price: 499, perDay: true, desc: "Bright folk troupe wear for school annual days and dance performances." },
   { id: 2, name: "Navratri Garba Chaniya Choli", tier: "mass", size: "adult", style: "festive", type: "both", price: 899, perDay: false, desc: "Mirror-work Garba attire for Navratri pandals and cultural days." },
   { id: 3, name: "School Annual Day Historical Costume", tier: "mass", size: "kids", style: "traditional", type: "rent", price: 399, perDay: true, desc: "Kings, queens, freedom fighters and saints for school stage plays." },
@@ -48,6 +53,8 @@ export const PRODUCTS: Product[] = [
   { id: 11, name: "Handloom Banarasi Heirloom Lehenga", tier: "luxury", size: "custom", style: "bridal", type: "bespoke", price: 18500, perDay: false, desc: "Banarasi brocade lehenga made to measure in our atelier." },
   { id: 12, name: "Groom Velvet Jodhpuri Suit Set", tier: "luxury", size: "custom", style: "bridal", type: "buy", price: 12999, perDay: false, desc: "Velvet bandhgala with embroidered detailing, tailored to fit." },
 ];
+
+export const PRODUCTS: Product[] = BASE_PRODUCTS.map((p) => ({ ...p, image: dummyPhoto(`bkd-costume-${p.id}`, 800, 500) }));
 
 export const PACKAGES = ["Community & Festival Events", "Family Ceremonies", "Grand Weddings"] as const;
 

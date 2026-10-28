@@ -3,7 +3,8 @@ import { Card, Field, inputClass } from "@/components/admin/ui";
 import { requireUser } from "@/lib/auth";
 import { getAllProducts, type AdminProduct } from "@/lib/content";
 import { TIER_LABEL, TYPE_BADGE, priceLabel } from "@/lib/shop";
-import { saveProduct } from "../actions";
+import DeleteButton from "@/components/admin/DeleteButton";
+import { deleteProduct, saveProduct } from "../actions";
 
 const SIZES = [["kids", "Kids"], ["adult", "Adult"], ["custom", "Custom tailoring"]];
 const STYLES = [["traditional", "Traditional / Royal"], ["folk", "Folk / Dance"], ["festive", "Festive"], ["bridal", "Bridal"]];
@@ -40,6 +41,11 @@ function ProductFields({ p }: { p?: AdminProduct }) {
         </select>
       </Field>
       <div className="md:col-span-4">
+        <Field label="Photo link" hint="https://… or /costumes/photo.jpg from the public folder. Leave empty to show the crest.">
+          <input name="image" defaultValue={p?.image} className={inputClass} />
+        </Field>
+      </div>
+      <div className="md:col-span-4">
         <Field label="Description"><textarea name="description" defaultValue={p?.desc} className={`${inputClass} min-h-16`} /></Field>
       </div>
       <label className="flex items-center gap-2 text-sm">
@@ -67,6 +73,10 @@ export default async function CostumesEditor() {
       {products.map((p) => (
         <details key={p.id} className="rounded-xl bg-white shadow-sm ring-1 ring-champagne/70">
           <summary className="flex cursor-pointer flex-wrap items-center gap-x-4 gap-y-1 p-4">
+            {p.image && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={p.image} alt="" className="h-10 w-14 rounded object-cover" />
+            )}
             <span className="font-semibold text-maroon-dark">{p.name}</span>
             <span className="text-sm text-muted">{TIER_LABEL[p.tier]} · {priceLabel(p)}</span>
             {!p.active && <span className="rounded bg-cream-dark px-2 py-0.5 text-xs font-semibold text-muted">Hidden</span>}
@@ -75,6 +85,10 @@ export default async function CostumesEditor() {
             <SaveForm action={saveProduct}>
               <ProductFields p={p} />
             </SaveForm>
+            <form action={deleteProduct} className="mt-3 border-t border-champagne pt-3">
+              <input type="hidden" name="id" value={p.id} />
+              <DeleteButton label="Delete costume" confirmText={`Delete "${p.name}" permanently? To keep it but take it off the website, untick "Show on website" instead.`} />
+            </form>
           </div>
         </details>
       ))}

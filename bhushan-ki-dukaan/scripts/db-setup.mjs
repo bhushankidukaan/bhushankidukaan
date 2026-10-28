@@ -37,8 +37,10 @@ if (count === 0) {
     ["Groom Velvet Jodhpuri Suit Set", "luxury", "custom", "bridal", "buy", 12999, false, "Velvet bandhgala with embroidered detailing, tailored to fit."],
   ];
   for (const [i, [name, tier, size, style, saleType, price, perDay, description]] of seed.entries()) {
-    await sql`INSERT INTO products (name, tier, size, style, sale_type, price, per_day, description, sort_order)
-              VALUES (${name}, ${tier}, ${size}, ${style}, ${saleType}, ${price}, ${perDay}, ${description}, ${i})`;
+    // Placeholder photo until real ones are added in Admin
+    const image = `https://picsum.photos/seed/bkd-costume-${i + 1}/800/500`;
+    await sql`INSERT INTO products (name, tier, size, style, sale_type, price, per_day, description, sort_order, image)
+              VALUES (${name}, ${tier}, ${size}, ${style}, ${saleType}, ${price}, ${perDay}, ${description}, ${i}, ${image})`;
   }
   console.log(`Seeded ${seed.length} costumes.`);
 } else {

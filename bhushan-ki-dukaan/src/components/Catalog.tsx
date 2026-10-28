@@ -153,7 +153,13 @@ function ProductCard({ p }: { p: Product }) {
     <article className="group flex w-full flex-col overflow-hidden rounded-xl bg-white shadow-sm transition-shadow hover:shadow-xl">
     {/* Photo slot: crest tile until real costume photos are added */}
     <div className="relative flex aspect-[16/10] items-center justify-center overflow-hidden bg-gradient-to-br from-maroon-light via-maroon to-maroon-dark">
-      <Crest id={`card-${p.id}`} className="h-28 w-24 opacity-90 transition-transform duration-500 group-hover:scale-105" />
+      {p.image ? (
+          // Photos are plain links set in Admin, so no Next image optimisation
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={p.image} alt={p.name} loading="lazy" className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+        ) : (
+          <Crest id={`card-${p.id}`} className="h-28 w-24 opacity-90 transition-transform duration-500 group-hover:scale-105" />
+        )}
       <span className={`absolute left-3 top-3 inline-flex items-center gap-1 rounded px-2 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm ${badge.className}`}>
         <Icon name={badge.icon} className="text-[13px]" /> {badge.label}
       </span>
