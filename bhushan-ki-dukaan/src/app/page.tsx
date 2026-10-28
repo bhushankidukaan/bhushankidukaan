@@ -3,6 +3,7 @@ import Crest from "@/components/Crest";
 import Icon from "@/components/Icon";
 import { BagButton, BookButton, TierButton } from "@/components/ShopButtons";
 import ShopProvider from "@/components/ShopProvider";
+import SiteLegalLinks from "@/components/SiteLegalLinks";
 import { ADDRESS, PHONE_DISPLAY, PHONE_HREF, waLink, type Tier } from "@/lib/shop";
 
 const NAV = [
@@ -227,6 +228,7 @@ export default function Home() {
             <a href="#catalog" className="flex flex-col items-center gap-1 rounded-lg bg-maroon py-3 text-gold-light"><Icon name="checkroom" />Catalog</a>
             <a href={PHONE_HREF} className="flex flex-col items-center gap-1 rounded-lg bg-maroon-dark py-3 text-white"><Icon name="call" />Call Us</a>
           </div>
+          <SiteLegalLinks />
           <div className="flex flex-col items-center justify-between gap-2 border-t border-white/10 pt-4 text-sm sm:flex-row">
             <p>&copy; 2026 Bhushan Ki Dukaan, Belagavi, Karnataka.</p>
             <p>Khade Bazar & Maruti Galli · {PHONE_DISPLAY}</p>
