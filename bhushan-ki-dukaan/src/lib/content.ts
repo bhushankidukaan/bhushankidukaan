@@ -47,7 +47,7 @@ export const DEFAULT_HOMEPAGE: HomepageContent = {
   },
   about: {
     heading: "Visit Our Flagship Studio",
-    text: "Find us in the heart of Belagavi at Khade Bazar & Maruti Galli. Touch the fabrics, try on rentals, or plan your event with our team.",
+    text: "Find us on Mahatma Phule Road, Shahapur, near Goaves Circle, above Bluestone Jewellers. Touch the fabrics, try on rentals, or plan your event with our team.",
     hours: "Open Mon – Sun, 10:00 AM – 9:00 PM",
   },
 };

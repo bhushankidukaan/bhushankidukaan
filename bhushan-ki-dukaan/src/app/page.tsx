@@ -218,7 +218,7 @@ export default async function Home() {
           <SiteLegalLinks />
           <div className="flex flex-col items-center justify-between gap-2 border-t border-white/10 pt-4 text-sm sm:flex-row">
             <p>&copy; 2026 Bhushan Ki Dukaan, Belagavi, Karnataka.</p>
-            <p>Khade Bazar & Maruti Galli · {PHONE_DISPLAY}</p>
+            <p>Shahapur, Belagavi · {PHONE_DISPLAY}</p>
           </div>
         </div>
       </footer>
