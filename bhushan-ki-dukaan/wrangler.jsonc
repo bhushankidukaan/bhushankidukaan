@@ -1,0 +1,21 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"main": ".open-next/worker.js",
+	"name": "bhushan-ki-dukaan",
+	"compatibility_date": "2026-10-28",
+	"compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+	"assets": {
+		"directory": ".open-next/assets",
+		"binding": "ASSETS"
+	},
+	"services": [
+		{
+			// Self-reference service binding, the service name must match the worker name
+			// see https://opennext.js.org/cloudflare/caching
+			"binding": "WORKER_SELF_REFERENCE",
+			"service": "bhushan-ki-dukaan"
+		}
+	]
+	// No R2 cache or Images binding yet: every page is static and there are no
+	// next/image photos. Add them from the adapter template when that changes.
+}
