@@ -45,7 +45,7 @@ export default function Home() {
               <Crest id="header" title="Bhushan Ki Dukaan crest" className="h-14 w-11 flex-shrink-0 drop-shadow-md" />
               <span className="flex flex-col">
                 <span className="font-serif text-lg leading-none tracking-tight text-maroon-dark sm:text-2xl">BHUSHAN KI DUKAAN</span>
-                <span className="mt-1 text-[9px] font-semibold uppercase tracking-widest text-gold sm:text-[11px]">Traditional Events & Costumes</span>
+                <span className="mt-1 text-[9px] font-semibold uppercase tracking-widest text-gold sm:text-[11px]">Event Management & Costumes</span>
               </span>
             </a>
             <nav className="hidden items-center gap-1 xl:flex">
@@ -219,7 +219,7 @@ export default function Home() {
           <div className="flex flex-col items-center gap-1 text-center">
             <Crest id="footer" title="Bhushan Ki Dukaan crest" className="h-20 w-16" />
             <span className="font-serif text-2xl tracking-wide text-gold-light">BHUSHAN KI DUKAAN</span>
-            <span className="text-[11px] font-semibold uppercase tracking-widest">Traditional Events & Costumes</span>
+            <span className="text-[11px] font-semibold uppercase tracking-widest">Event Management & Costumes</span>
           </div>
           <div className="grid grid-cols-2 gap-2 text-[11px] font-semibold uppercase tracking-wider sm:grid-cols-4">
             <a href={waLink()} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1 rounded-lg bg-whatsapp py-3 text-white"><Icon name="chat" />WhatsApp</a>
