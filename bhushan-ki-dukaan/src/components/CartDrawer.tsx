@@ -1,15 +1,19 @@
 "use client";
 
-import { PRODUCTS, priceLabel, rupees, waLink } from "@/lib/shop";
+import { priceLabel, rupees, waLink } from "@/lib/shop";
+import { saveLead } from "@/lib/leads-client";
 import Crest from "./Crest";
 import Icon from "./Icon";
 import { useShop } from "./ShopProvider";
 
 export default function CartDrawer() {
-  const { cart, changeQty, cartOpen, setCartOpen, showToast } = useShop();
+  const { products, cart, changeQty, cartOpen, setCartOpen, showToast } = useShop();
   if (!cartOpen) return null;
 
-  const lines = cart.map((l) => ({ ...l, product: PRODUCTS.find((p) => p.id === l.id)! }));
+  const lines = cart.flatMap((l) => {
+    const product = products.find((p) => p.id === l.id);
+    return product ? [{ ...l, product }] : [];
+  });
   const total = lines.reduce((s, l) => s + l.product.price * l.qty, 0);
 
   function checkout() {
@@ -18,6 +22,13 @@ export default function CartDrawer() {
       return;
     }
     const items = lines.map((l) => `- ${l.product.name} x ${l.qty} (${priceLabel(l.product)})`).join("\n");
+    saveLead({
+      kind: "order",
+      details: {
+        items: lines.map((l) => ({ id: l.product.id, name: l.product.name, qty: l.qty, price: priceLabel(l.product) })),
+        total: rupees(total),
+      },
+    });
     window.open(
       waLink(`Hello Bhushan Ki Dukaan, I'd like to order / rent:\n${items}\nEstimated total: ${rupees(total)}`),
       "_blank",

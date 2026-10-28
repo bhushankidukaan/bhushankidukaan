@@ -1,43 +1,36 @@
+import { connection } from "next/server";
 import Catalog from "@/components/Catalog";
 import Crest from "@/components/Crest";
 import Icon from "@/components/Icon";
 import { BagButton, BookButton, TierButton } from "@/components/ShopButtons";
 import ShopProvider from "@/components/ShopProvider";
 import SiteLegalLinks from "@/components/SiteLegalLinks";
+import { getActiveProducts, getHomepage } from "@/lib/content";
 import { ADDRESS, PHONE_DISPLAY, PHONE_HREF, waLink, type Tier } from "@/lib/shop";
 
 const NAV = [
-  ["#tiers", "Collection Tiers"],
+  ["#tiers", "Shop by Occasion"],
   ["#catalog", "Costume Store"],
   ["#services", "Event Services"],
   ["#about", "Belagavi Roots"],
 ];
 
-const STATS = [
-  ["Curated Costumes", "500+ Pieces", "Available on rent & buy"],
-  ["Events Delivered", "120+ Events", "Weddings & cultural fests"],
-  ["Family Collections", "100% Bespoke", "Matching family sets"],
-  ["Consultation", "24 Hours", "Direct studio callback"],
-];
-
-const TIERS: { tier: Tier; icon: string; segment: string; title: string; text: string; featured?: boolean }[] = [
-  { tier: "mass", icon: "theater_comedy", segment: "Festivals · School · Stage", title: "Festivals & School Events", text: "Annual day outfits, fancy dress, folk dance and dhol-tasha troupe wear - easy to rent by the day." },
-  { tier: "premium", icon: "family_restroom", segment: "Upanayanam · Baby Showers · Family Functions", title: "Family Ceremonies", text: "Matching family sets and regional silks for weddings, Upanayanam and baby showers.", featured: true },
-  { tier: "luxury", icon: "diamond", segment: "Weddings · Receptions · Sangeet", title: "Weddings & Bridal", text: "Bridal silks, Peshwai sherwanis, hand-tied safas and made-to-measure wedding wear." },
-];
-
-const SERVICES = [
-  { pkg: "Community & Festival Events", tag: "Ganesh Utsav · Navratri · School Days", text: "Society Ganesh Utsav, Navratri pandals and school cultural days.", items: ["Marigold & mango-leaf decor", "Sound system & mic set", "Bulk costume supply & management"], cta: "Plan My Event" },
-  { pkg: "Family Ceremonies", tag: "Upanayanam · Weddings at Home · Most Booked", text: "Belagavi traditional weddings and Upanayanam ceremonies.", items: ["Mandap decor with brass elements", "Bride & groom styling + costumes", "Shehnai / dhol-tasha arrangement"], cta: "Book Consultation", featured: true },
-  { pkg: "Grand Weddings", tag: "Destination · Palace Themes · Processions", text: "Destination weddings, palace themes and wedding processions.", items: ["Palace-grade floral decor", "Custom heirloom attire tailoring", "Dedicated wedding concierge"], cta: "Plan My Wedding" },
-];
+const TIER_ICON: Record<Tier, string> = { mass: "theater_comedy", premium: "family_restroom", luxury: "diamond" };
 
 const sectionHead = "font-serif text-4xl tracking-tight md:text-5xl";
 const eyebrow = "mb-1 block text-xs font-semibold uppercase tracking-widest text-gold";
 
-export default function Home() {
+export default async function Home() {
+  // Content is edited in Admin → Website, so render per request
+  await connection();
+  const [content, products] = await Promise.all([getHomepage(), getActiveProducts()]);
+  const { hero, stats, occasions, services, about } = content;
+  // Last word of the studio heading is highlighted, as in the original design
+  const aboutWords = about.heading.split(" ");
+  const aboutLast = aboutWords.pop();
+
   return (
-    <ShopProvider>
+    <ShopProvider products={products} packages={services.packages.map((p) => p.name)}>
       {/* Header */}
       <header className="fixed inset-x-0 top-0 z-50 bg-cream/90 shadow-[0_1px_8px_rgba(0,0,0,0.04)] backdrop-blur-md">
         <div className="flex h-24 items-center justify-between px-5 lg:px-16">
@@ -77,20 +70,16 @@ export default function Home() {
           <div className="relative mx-auto flex max-w-7xl flex-col items-center">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-cream-dark px-4 py-1 shadow-sm">
               <span className="h-2 w-2 animate-pulse rounded-full bg-emerald" />
-              <span className="text-[11px] font-semibold uppercase tracking-widest text-maroon-dark">Belagavi&apos;s Event Management & Costume Specialists</span>
+              <span className="text-[11px] font-semibold uppercase tracking-widest text-maroon-dark">{content.pill}</span>
             </div>
 
             <div className="relative mb-10 flex min-h-[460px] w-full items-end overflow-hidden rounded-xl bg-gradient-to-br from-maroon via-maroon-dark to-espresso shadow-2xl md:min-h-[420px]">
               <Crest id="hero" className="absolute right-4 top-4 h-24 w-20 opacity-90 drop-shadow-2xl md:right-16 md:top-1/2 md:h-60 md:w-52 md:-translate-y-1/2" />
               <div className="relative w-full p-5 sm:p-8 md:p-10">
                 <div className="max-w-2xl">
-                  <span className="mb-1 inline-block text-[11px] font-semibold uppercase tracking-widest text-champagne">Flagship Collection 2026</span>
-                  <h1 className="font-serif text-[40px] leading-[1.1] tracking-tight text-white md:text-6xl">
-                    From Timeless Traditions to Grand Celebrations.
-                  </h1>
-                  <p className="mt-2 max-w-xl text-white/80">
-                    Rent or buy authentic traditional costumes and book full-scale event management for weddings, festivals and cultural ceremonies in Belagavi.
-                  </p>
+                  <span className="mb-1 inline-block text-[11px] font-semibold uppercase tracking-widest text-champagne">{hero.eyebrow}</span>
+                  <h1 className="font-serif text-[40px] leading-[1.1] tracking-tight text-white md:text-6xl">{hero.title}</h1>
+                  <p className="mt-2 max-w-xl text-white/80">{hero.subtitle}</p>
                 </div>
                 <div className="mt-5 flex flex-wrap gap-2">
                   <a href="#catalog" className="inline-flex items-center gap-1 rounded-lg bg-gold px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-white shadow-md transition-colors hover:bg-gold-light">
@@ -104,11 +93,11 @@ export default function Home() {
             </div>
 
             <div className="grid w-full grid-cols-2 gap-6 rounded-xl bg-sand p-6 shadow-sm md:grid-cols-4">
-              {STATS.map(([label, value, sub]) => (
-                <div key={label} className="flex flex-col">
-                  <span className="text-[11px] font-semibold uppercase tracking-widest text-muted">{label}</span>
-                  <span className="mt-1 font-serif text-3xl text-maroon-dark">{value}</span>
-                  <span className="text-sm text-ink/70">{sub}</span>
+              {stats.map((s, i) => (
+                <div key={i} className="flex flex-col">
+                  <span className="text-[11px] font-semibold uppercase tracking-widest text-muted">{s.label}</span>
+                  <span className="mt-1 font-serif text-3xl text-maroon-dark">{s.value}</span>
+                  <span className="text-sm text-ink/70">{s.sub}</span>
                 </div>
               ))}
             </div>
@@ -117,25 +106,25 @@ export default function Home() {
 
         <Catalog />
 
-        {/* Tiers */}
+        {/* Occasions */}
         <section id="tiers" className="scroll-mt-24 px-5 py-14 lg:px-16">
           <div className="mx-auto max-w-7xl">
             <div className="mx-auto mb-10 max-w-2xl text-center">
-              <span className={eyebrow}>Something for Every Celebration</span>
-              <h2 className={`${sectionHead} text-maroon-dark`}>Shop by Occasion</h2>
-              <p className="mt-2 text-muted">From a school stage play to your wedding day - wear it once on rent, or make it yours to keep.</p>
+              <span className={eyebrow}>{occasions.eyebrow}</span>
+              <h2 className={`${sectionHead} text-maroon-dark`}>{occasions.heading}</h2>
+              <p className="mt-2 text-muted">{occasions.intro}</p>
             </div>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-              {TIERS.map((t) => (
+              {occasions.cards.map((c) => (
                 <TierButton
-                  key={t.tier}
-                  tier={t.tier}
-                  className={`group rounded-xl bg-white p-6 text-left transition-shadow hover:shadow-xl ${t.featured ? "shadow-md ring-2 ring-gold" : "shadow-sm"}`}
+                  key={c.tier}
+                  tier={c.tier}
+                  className={`group rounded-xl bg-white p-6 text-left transition-shadow hover:shadow-xl ${c.tier === "premium" ? "shadow-md ring-2 ring-gold" : "shadow-sm"}`}
                 >
-                  <Icon name={t.icon} className="text-[32px] text-gold" />
-                  <span className="mt-2 block text-[11px] font-semibold uppercase tracking-widest text-muted">{t.segment}</span>
-                  <span className="mt-1 block font-serif text-2xl text-maroon-dark">{t.title}</span>
-                  <span className="mt-1 block text-sm text-ink/70">{t.text}</span>
+                  <Icon name={TIER_ICON[c.tier]} className="text-[32px] text-gold" />
+                  <span className="mt-2 block text-[11px] font-semibold uppercase tracking-widest text-muted">{c.tagline}</span>
+                  <span className="mt-1 block font-serif text-2xl text-maroon-dark">{c.title}</span>
+                  <span className="mt-1 block text-sm text-ink/70">{c.text}</span>
                   <span className="mt-4 inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-gold group-hover:text-maroon-dark">
                     View Collection <Icon name="arrow_forward" className="text-[16px]" />
                   </span>
@@ -149,15 +138,15 @@ export default function Home() {
         <section id="services" className="scroll-mt-24 bg-sand px-5 py-14 lg:px-16">
           <div className="mx-auto max-w-7xl">
             <div className="mx-auto mb-10 max-w-2xl text-center">
-              <span className={eyebrow}>End-to-End Curation</span>
-              <h2 className={`${sectionHead} text-maroon-dark`}>Event Management Packages</h2>
-              <p className="mt-2 text-muted">Traditional weddings, thread ceremonies, Ganesh Utsav pandals and sangeet nights across Belagavi.</p>
+              <span className={eyebrow}>{services.eyebrow}</span>
+              <h2 className={`${sectionHead} text-maroon-dark`}>{services.heading}</h2>
+              <p className="mt-2 text-muted">{services.intro}</p>
             </div>
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-              {SERVICES.map((s) => (
-                <div key={s.pkg} className={`flex flex-col rounded-xl p-6 ${s.featured ? "bg-maroon-dark text-white shadow-xl ring-2 ring-gold" : "bg-white shadow-sm"}`}>
+              {services.packages.map((s) => (
+                <div key={s.name} className={`flex flex-col rounded-xl p-6 ${s.featured ? "bg-maroon-dark text-white shadow-xl ring-2 ring-gold" : "bg-white shadow-sm"}`}>
                   <span className="text-[11px] font-semibold uppercase tracking-widest text-gold">{s.tag}</span>
-                  <h3 className={`mt-1 font-serif text-3xl ${s.featured ? "text-gold-light" : "text-maroon-dark"}`}>{s.pkg}</h3>
+                  <h3 className={`mt-1 font-serif text-3xl ${s.featured ? "text-gold-light" : "text-maroon-dark"}`}>{s.name}</h3>
                   <p className={`mt-1 text-sm ${s.featured ? "text-white/75" : "text-ink/70"}`}>{s.text}</p>
                   <ul className="mt-4 flex-1 space-y-2 text-sm">
                     {s.items.map((item) => (
@@ -168,7 +157,7 @@ export default function Home() {
                     ))}
                   </ul>
                   <BookButton
-                    pkg={s.pkg}
+                    pkg={s.name}
                     className={`mt-6 rounded-lg py-2.5 text-xs font-semibold uppercase tracking-wider transition-colors ${
                       s.featured ? "bg-gold text-white hover:bg-gold-light" : "bg-cream-dark text-maroon-dark hover:bg-maroon-dark hover:text-white"
                     }`}
@@ -187,14 +176,12 @@ export default function Home() {
             <div>
               <span className={eyebrow}>Proudly Rooted in Belagavi</span>
               <h2 className={sectionHead}>
-                Visit Our Flagship <span className="italic text-gold-light">Studio</span>
+                {aboutWords.join(" ")} <span className="italic text-gold-light">{aboutLast}</span>
               </h2>
-              <p className="mt-3 text-white/75">
-                Find us in the heart of Belagavi at Khade Bazar & Maruti Galli. Touch the fabrics, try on rentals, or plan your event with our team.
-              </p>
+              <p className="mt-3 text-white/75">{about.text}</p>
               <div className="mt-4 space-y-2 text-sm">
                 <p className="flex items-center gap-2"><Icon name="location_on" className="text-[18px] text-gold" />{ADDRESS}</p>
-                <p className="flex items-center gap-2"><Icon name="schedule" className="text-[18px] text-gold" />Open Mon – Sun, 10:00 AM – 9:00 PM</p>
+                <p className="flex items-center gap-2"><Icon name="schedule" className="text-[18px] text-gold" />{about.hours}</p>
                 <p className="flex items-center gap-2"><Icon name="call" className="text-[18px] text-gold" /><a href={PHONE_HREF} className="hover:text-gold">{PHONE_DISPLAY}</a></p>
               </div>
             </div>

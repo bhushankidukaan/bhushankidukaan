@@ -1,6 +1,7 @@
 "use client";
 
-import { PACKAGES, waLink } from "@/lib/shop";
+import { waLink } from "@/lib/shop";
+import { saveLead } from "@/lib/leads-client";
 import Icon from "./Icon";
 import { useShop } from "./ShopProvider";
 
@@ -10,7 +11,7 @@ const inputClass = "mt-1 w-full rounded-lg bg-white px-3 py-2.5 shadow-sm focus:
 const labelClass = "block text-[11px] font-semibold uppercase tracking-wider text-muted";
 
 export default function BookingModal() {
-  const { bookingPackage, closeBooking, showToast } = useShop();
+  const { packages, bookingPackage, closeBooking, showToast } = useShop();
   if (bookingPackage === undefined) return null;
 
   function submit(e: React.FormEvent<HTMLFormElement>) {
@@ -25,6 +26,12 @@ export default function BookingModal() {
       `Package: ${f.get("package")}`,
       `Location: ${f.get("location")}`,
     ].join("\n");
+    saveLead({
+      kind: "booking",
+      name: String(f.get("name")),
+      phone: String(f.get("phone")),
+      details: { event: f.get("event"), date: f.get("date"), package: f.get("package"), location: f.get("location") },
+    });
     window.open(waLink(msg), "_blank", "noopener");
     closeBooking();
     showToast("Opening WhatsApp with your request…");
@@ -68,7 +75,7 @@ export default function BookingModal() {
         <label className={labelClass}>
           Package
           <select name="package" defaultValue={bookingPackage || "Not sure yet"} className={inputClass}>
-            {PACKAGES.map((p) => <option key={p}>{p}</option>)}
+            {packages.map((p) => <option key={p}>{p}</option>)}
             <option>Not sure yet</option>
           </select>
         </label>

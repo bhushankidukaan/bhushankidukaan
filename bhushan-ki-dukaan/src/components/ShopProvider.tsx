@@ -1,13 +1,15 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
-import { PRODUCTS, type Tier } from "@/lib/shop";
+import type { Product, Tier } from "@/lib/shop";
 import CartDrawer from "./CartDrawer";
 import BookingModal from "./BookingModal";
 
 type CartLine = { id: number; qty: number };
 
 type Shop = {
+  products: Product[];
+  packages: string[];
   cart: CartLine[];
   cartCount: number;
   addToCart: (id: number) => void;
@@ -31,7 +33,15 @@ export function useShop() {
   return shop;
 }
 
-export default function ShopProvider({ children }: { children: React.ReactNode }) {
+export default function ShopProvider({
+  children,
+  products,
+  packages,
+}: {
+  children: React.ReactNode;
+  products: Product[];
+  packages: string[];
+}) {
   const [cart, setCart] = useState<CartLine[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
   const [bookingPackage, setBookingPackage] = useState<string | undefined>(undefined);
@@ -50,10 +60,10 @@ export default function ShopProvider({ children }: { children: React.ReactNode }
       setCart((c) =>
         c.some((l) => l.id === id) ? c.map((l) => (l.id === id ? { ...l, qty: l.qty + 1 } : l)) : [...c, { id, qty: 1 }],
       );
-      const p = PRODUCTS.find((x) => x.id === id);
+      const p = products.find((x) => x.id === id);
       if (p) showToast(`Added "${p.name}" to your bag`);
     },
-    [showToast],
+    [products, showToast],
   );
 
   const changeQty = useCallback((id: number, delta: number) => {
@@ -72,6 +82,8 @@ export default function ShopProvider({ children }: { children: React.ReactNode }
   }, []);
 
   const shop: Shop = {
+    products,
+    packages,
     cart,
     cartCount: cart.reduce((s, l) => s + l.qty, 0),
     addToCart,

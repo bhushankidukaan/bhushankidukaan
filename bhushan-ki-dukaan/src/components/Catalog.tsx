@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PRODUCTS, TIER_LABEL, TYPE_BADGE, priceLabel, waLink, type Product, type Tier } from "@/lib/shop";
+import { TIER_LABEL, TYPE_BADGE, priceLabel, waLink, type Product, type Tier } from "@/lib/shop";
 import Crest from "./Crest";
 import Icon from "./Icon";
 import { useShop } from "./ShopProvider";
@@ -34,10 +34,10 @@ function matches(p: Product, tier: Tier | "all", f: Filters) {
 }
 
 export default function Catalog() {
-  const { tier, setTier, addToCart } = useShop();
+  const { products, tier, setTier, addToCart } = useShop();
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
-  const list = PRODUCTS.filter((p) => matches(p, tier, filters));
-  const count = (t: Tier | "all") => (t === "all" ? PRODUCTS.length : PRODUCTS.filter((p) => p.tier === t).length);
+  const list = products.filter((p) => matches(p, tier, filters));
+  const count = (t: Tier | "all") => (t === "all" ? products.length : products.filter((p) => p.tier === t).length);
 
   return (
     <section id="catalog" className="scroll-mt-24 bg-cream px-5 py-14 lg:px-16">
@@ -50,7 +50,7 @@ export default function Catalog() {
             <h2 className="font-serif text-4xl tracking-tight text-maroon-dark md:text-5xl">Traditional Costumes Catalog</h2>
           </div>
           <p className="text-sm text-muted">
-            Showing {list.length} of {PRODUCTS.length} pieces
+            Showing {list.length} of {products.length} pieces
           </p>
         </div>
 
